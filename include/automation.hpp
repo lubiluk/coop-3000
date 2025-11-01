@@ -13,8 +13,10 @@ struct automation_config
     int door_open_time;
     int door_close_time;
     std::string temp_sensor_id;
-    float temp_min;
-    float temp_max;
+    float temp_heating_on;
+    float temp_heating_off;
+    float temp_door_open;
+    float temp_door_close;
 };
 
 struct automation_status

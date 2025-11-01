@@ -63,8 +63,10 @@ void start(po::variables_map &vm)
     float lat = vm["latitude"].as<float>();
     float lon = vm["longitude"].as<float>();
     std::string temp_sensor_id = vm["temp-sensor-id"].as<std::string>();
-    float temp_min = vm["temp-min"].as<float>();
-    float temp_max = vm["temp-max"].as<float>();
+    float temp_heating_on = vm["temp-heating-on"].as<float>();
+    float temp_heating_off = vm["temp-heating-off"].as<float>();
+    float temp_door_open = vm["temp-door-open"].as<float>();
+    float temp_door_close = vm["temp-door-close"].as<float>();
     std::string monitor_file = vm["monitor-file"].as<std::string>();
 
     std::cout << "Starting coop automation at location (" << lat << ", " << lon << ") \n";
@@ -77,8 +79,10 @@ void start(po::variables_map &vm)
     config.door_open_time = door_open_time;
     config.door_close_time = door_close_time;
     config.temp_sensor_id = temp_sensor_id;
-    config.temp_min = temp_min;
-    config.temp_max = temp_max;
+    config.temp_heating_on = temp_heating_on;
+    config.temp_heating_off = temp_heating_off;
+    config.temp_door_open = temp_door_open;
+    config.temp_door_close = temp_door_close;
 
     coop = std::make_unique<automation>(config);
 
@@ -115,25 +119,21 @@ int main(int argc, char **argv)
         po::options_description visible("Program options");
         visible.add_options()("help", "produce help message")("config,c", po::value<string>(&config_file)->default_value(""), "name of a file of a configuration.");
 
-        int pin_light;       // WiringPi pin number for light
-        int pin_heatig;      // WiringPi pin number for heating
-        int pin_door_pos{2}; // WiringPi pin number for door positive
-        int pin_door_neg{3}; // WiringPi pin number for door negative
-        float latitude;      // Latitude of the location
-        float longitude;     // Longitude of the location
         // Declare a group of options that should be in a config file
         po::options_description config("Configuration");
-        config.add_options()("pin-light", po::value<int>(&pin_light), "pin number for light")
-                            ("pin-heating", po::value<int>(&pin_heatig), "pin number for heating")
-                            ("pin-door-pos", po::value<int>(&pin_door_pos), "pin number for door positive")
-                            ("pin-door-neg", po::value<int>(&pin_door_neg), "pin number for door negative")
+        config.add_options()("pin-light", po::value<int>(), "pin number for light")
+                            ("pin-heating", po::value<int>(), "pin number for heating")
+                            ("pin-door-pos", po::value<int>(), "pin number for door positive")
+                            ("pin-door-neg", po::value<int>(), "pin number for door negative")
                             ("door-open-time", po::value<int>(), "time to open the door")
                             ("door-close-time", po::value<int>(), "time to close the door")
-                            ("latitude", po::value<float>(&latitude), "latitude")
-                            ("longitude", po::value<float>(&longitude), "longitude")
+                            ("latitude", po::value<float>(), "latitude")
+                            ("longitude", po::value<float>(), "longitude")
                             ("temp-sensor-id", po::value<string>(), "ID of the temperature sensor")
-                            ("temp-min", po::value<float>(), "minimum temperature")
-                            ("temp-max", po::value<float>(), "maximum temperature")
+                            ("temp-heating-on", po::value<float>(), "temperature to turn on heating")
+                            ("temp-heating-off", po::value<float>(), "temperature to turn off heating")
+                            ("temp-door-open", po::value<float>(), "temperature to open the door")
+                            ("temp-door-close", po::value<float>(), "temperature to close the door")
                             ("monitor-file", po::value<string>(), "file to save monitoring data");
 
         po::options_description cmdline_options;

@@ -22,8 +22,8 @@ automation_status automation::update(timing::dtime tod)
         std::cerr << "Error reading temperature: " << e.what() << std::endl;
     }
 
-    float temp_min = config.temp_min;
-    float temp_max = config.temp_max;
+    float temp_heating_on = config.temp_heating_on;
+    float temp_heating_off = config.temp_heating_off;
 
     switch (tod)
     {
@@ -43,28 +43,47 @@ automation_status automation::update(timing::dtime tod)
         door.contract();
         break;
     case dtime::evening:
-        if (temp < temp_min)
+        if (temp < temp_heating_on)
         {
             heating.turn_on();
         }
-        else if (temp > temp_max)
+        else if (temp > temp_heating_off)
         {
             heating.turn_off();
         }
+        
         light.turn_on();
-        door.extend();
+
+        if (temp > config.temp_door_open)
+        {
+            door.contract();
+        }
+        else
+        {
+            door.extend();
+        }
         break;
     case dtime::night:
-        if (temp < temp_min)
+        if (temp < temp_heating_on)
         {
             heating.turn_on();
         }
-        else if (temp > temp_max)
+        else if (temp > temp_heating_off)
         {
             heating.turn_off();
         }
+        
         light.turn_off();
-        door.extend();
+        
+        if (temp > config.temp_door_open)
+        {
+            door.contract();
+        }
+        else if (temp < config.temp_door_close)
+        {
+            door.extend();
+        }
+
         break;
     }
 
