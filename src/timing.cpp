@@ -55,7 +55,7 @@ namespace timing
         // Solar mean anomaly
         double M = fmod((357.5291 + 0.98560028 * J_star), 360);
         // Equation of the center
-        double C = 1.9148 * sin(M / 360 * 2 * pi) + 0.02 * sin(2 * M / 360 * 2 * pi) + 0.0003 * sin(3 * M * 360 * 2 * pi);
+        double C = 1.9148 * sin(M / 360 * 2 * pi) + 0.02 * sin(2 * M / 360 * 2 * pi) + 0.0003 * sin(3 * M / 360 * 2 * pi);
         // Ecliptic longitude
         double lambda = fmod((M + C + 180 + 102.9372), 360);
         // Solar transit
