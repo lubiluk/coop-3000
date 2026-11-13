@@ -184,5 +184,6 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    cout << "Exiting normally\n";
     return 0;
 }

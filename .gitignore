@@ -1,4 +1,6 @@
 .DS_Store
 .vscode/
 build/
-config/config.cfg
+config/
+^config/config_example.cfg
+*.csv

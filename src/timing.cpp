@@ -96,11 +96,11 @@ namespace timing
 
     dtime time_tracker::tod(unsigned long now)
     {
-        auto sunrise_time = today.sunrise(now);
-        auto morning_time = today.sunrise(now) + 3600;
+        auto sunrise_time = today.sunrise(now); // at sunrise
+        auto morning_time = today.sunrise(now) + 1800; // 30 minutes after sunrise
         auto sunset_time = today.sunset(now) - 1800;  // 30 minutes before sunset
         auto evening_time = today.sunset(now) + 2700; // 45 minutes after sunset
-        auto night_time = evening_time + 900;         // 5 minutes after evening
+        auto night_time = evening_time + 300;         // 5 minutes after evening
 
         if (now < sunrise_time || now >= night_time)
         {
@@ -123,45 +123,6 @@ namespace timing
             return dtime::evening;
         }
     }
-
-    // dtime time_tracker::current_tod()
-    // {
-    //     using namespace std::chrono;
-    //     // Get the current time since midnight
-    //     auto now = system_clock::now();
-    //     auto today = floor<days>(now);  // Start of today
-    //     auto time_of_day = now - today; // Duration since midnight
-    //     time_of_day += 1h;
-
-    //     // Define times of day as durations since midnight
-    //     auto sunrise_time = 7h;                  // 7:00 AM
-    //     auto morning_time = sunrise_time + 1h;   // 8:00 AM
-    //     auto sunset_time = 16h;          // 4:00 PM
-    //     auto evening_time = sunset_time + 45min; // 4:45 PM
-    //     auto night_time = evening_time + 30min;  // 5:15 PM
-
-    //     // Determine the current time-of-day period
-    //     if (time_of_day < sunrise_time || time_of_day >= night_time)
-    //     {
-    //         return dtime::night;
-    //     }
-    //     else if (time_of_day < morning_time)
-    //     {
-    //         return dtime::sunrise;
-    //     }
-    //     else if (time_of_day < sunset_time)
-    //     {
-    //         return dtime::morning;
-    //     }
-    //     else if (time_of_day < evening_time)
-    //     {
-    //         return dtime::sunset;
-    //     }
-    //     else
-    //     {
-    //         return dtime::evening;
-    //     }
-    // }
 
     unsigned long time_tracker::unix_timestamp()
     {

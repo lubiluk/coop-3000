@@ -1,5 +1,6 @@
 #include "automation.hpp"
 #include <iostream>
+#include <iomanip>
 
 automation::automation(const automation_config &config)
     : light(config.pin_light, "light"),
@@ -93,10 +94,13 @@ automation_status automation::update(timing::dtime tod)
 std::ostream &operator<<(std::ostream &os, const automation_status &status)
 {
     // Output as one line as name: value
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
+    os << "[" << std::put_time(std::localtime(&time), "%c") << "] ";
     os << "Time of Day: " << status.tod << ", ";
     os << "Temperature: " << status.temperature << ", ";
     os << "Heating: " << status.heating << ", ";
     os << "Light: " << status.light << ", ";
-    os << "Door: " << status.door;
+    os << "Door: " << (status.door ? "extended" : "contracted");
     return os;
 }
