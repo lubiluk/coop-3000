@@ -1,94 +1,75 @@
 # coop-3000
 
-Automated chicken coop controller.
+Automated chicken coop controller for Raspberry Pi.
 
-## Dependencies
+## Build and install on the Pi
 
-- CMake 3.10+
-- C++20 compiler
-- Boost (`program_options`)
-- [wiringPi](http://wiringpi.com/) (required on target hardware; not needed when building with mock)
+Upload the source tree (including `debian/`) to the Pi over SSH. Build from the
+source root. The Pi needs WiringPi headers and the library already installed,
+and 1-Wire enabled for the temperature sensor.
 
-## Build
-
-Clone the repository and create a build directory:
-
-```bash
-git clone <repo-url> coop-3000
-cd coop-3000
-mkdir build && cd build
+```sh
+sudo apt install build-essential debhelper cmake libboost-program-options-dev
+dpkg-buildpackage -b -us -uc
 ```
 
-### Mock build (no hardware required)
+Install the `coop-3000` `.deb` produced in the parent directory (not the optional
+debug-symbol package). Substitute the actual filename printed by the build:
 
-```bash
-cmake .. -DUSE_MOCK=ON
-make
+```sh
+sudo apt install ./../coop-3000_1.0_arm64.deb
 ```
 
-### Hardware build (Raspberry Pi with wiringPi)
+The package does not start or enable the service on first install. Copy the
+example once, then edit it to match your pins, location, and sensor:
 
-```bash
-cmake .. -DUSE_MOCK=OFF
-make
+```sh
+sudo install -d /etc/coop-3000
+sudo cp -n /usr/share/doc/coop-3000/config_example.cfg /etc/coop-3000/config.cfg
+sudoedit /etc/coop-3000/config.cfg
+sudo systemctl enable --now coop-3000
 ```
 
-## Install
+The unit runs as root on the test Pi. Starting or restarting the controller
+moves the door. An upgrade restarts a running service and leaves the config and
+CSV untouched. Bump the version in `debian/changelog` for a new release.
 
-```bash
-sudo make install
+If you previously installed a manual unit at
+`/etc/systemd/system/coop-3000.service`, stop the old service and remove or
+migrate that unit before enabling the packaged one. The local unit otherwise
+takes precedence.
+
+### Installed paths
+
+| Path | Purpose |
+| --- | --- |
+| `/usr/bin/coop-3000` | Controller executable |
+| `/usr/lib/systemd/system/coop-3000.service` (or the distribution's vendor unit directory) | Packaged systemd unit |
+| `/usr/share/doc/coop-3000/config_example.cfg` | Configuration template |
+| `/etc/coop-3000/config.cfg` | Local config, passed explicitly by the unit |
+| `/var/log/coop-3000/monitor.csv` | CSV output with the example `monitor-file` setting; systemd creates the parent directory |
+| `/sys/bus/w1/devices/<temp-sensor-id>/w1_slave` | Temperature input |
+
+View service output with `journalctl -u coop-3000`.
+
+## Local development on macOS
+
+The CMake build defaults to real GPIO (`USE_MOCK=OFF`). On macOS, install a
+C++20 compiler, CMake, and Boost (`program_options`), then opt into mock GPIO:
+
+```sh
+cmake -S . -B build-mock -DUSE_MOCK=ON
+cmake --build build-mock
+cp -n config/config_example.cfg config/config_mock.cfg
 ```
 
-This installs:
-- `coop-3000` binary to `/usr/local/bin`
-- `config.cfg` to `/usr/local/etc/coop-3000/`
+Set `monitor-file` in `config/config_mock.cfg` to a writable path, such as
+`monitor.csv`, then run:
 
-To install to a custom prefix (e.g. `/opt/coop`):
-
-```bash
-cmake .. -DCMAKE_INSTALL_PREFIX=/opt/coop
-make
-sudo make install
+```sh
+./build-mock/coop-3000 --config config/config_mock.cfg
 ```
 
-## Configuration
-
-Edit the installed config file at `/usr/local/etc/coop-3000/config.cfg` (or `config/config_example.cfg` as a reference) before running the application.
-
-## Run
-
-It's best to make a service out of it, but you can also run it directly:
-
-```bash
-coop-3000 --config /path/to/config.cfg
-```
-
-### Systemd Service
-
-1. Create a service file `coop-3000.service`:
-
-```ini
-[Unit]
-Description=Coop 3000 Automation Service
-After=network.target
-
-[Service]
-ExecStart=/usr/local/bin/coop-3000
-WorkingDirectory=/usr/local/bin
-Restart=always
-User=cooper
-Group=cooper
-Environment=HOME=/home/cooper
-
-[Install]
-WantedBy=multi-user.target
-```
-
-2. Copy it to the systemd directory and enable it:
-
-```bash
-sudo cp coop-3000.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable coop-3000
-sudo systemctl start coop-3000
-```
+The mock build still attempts the 1-Wire read and uses a fallback temperature
+if the sensor is unavailable. All direct runs require `--config` (or `-c`);
+`--help` works without a config.

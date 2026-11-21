@@ -1,0 +1,10 @@
+[Unit]
+Description=Coop 3000 automation service
+
+[Service]
+ExecStart=/usr/bin/coop-3000 --config /etc/coop-3000/config.cfg
+LogsDirectory=coop-3000
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

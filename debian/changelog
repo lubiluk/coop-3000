@@ -1,0 +1,5 @@
+coop-3000 (1.0) unstable; urgency=medium
+
+  * Package the controller as a systemd service.
+
+ -- Paweł Gajewski <lubiluk@gmail.com>  Fri, 17 Jul 2026 00:00:00 +0000

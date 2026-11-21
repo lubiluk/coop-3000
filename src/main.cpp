@@ -13,7 +13,7 @@
 #include <csignal>
 #include <boost/program_options.hpp>
 #include <stdexcept>
-#include <vector>
+#include <memory>
 #include <cstdlib>
 
 using namespace std::chrono_literals;
@@ -29,19 +29,6 @@ void signal_handler(int signal)
     exit(signal); // Exit the program
 }
 
-std::string find_config_file(const std::vector<std::string> &paths)
-{
-    for (const auto &path : paths)
-    {
-        std::ifstream ifs(path);
-        if (ifs.good())
-        {
-            return path;
-        }
-    }
-    
-    throw std::runtime_error("Config file not found in default locations.");
-}
 
 void start(po::variables_map &vm)
 {
@@ -117,7 +104,7 @@ int main(int argc, char **argv)
         // Declare a group of options that will be
         // allowed only on command line
         po::options_description visible("Program options");
-        visible.add_options()("help", "produce help message")("config,c", po::value<string>(&config_file)->default_value(""), "name of a file of a configuration.");
+        visible.add_options()("help", "produce help message")("config,c", po::value<string>(&config_file), "path to the configuration file (required)");
 
         // Declare a group of options that should be in a config file
         po::options_description config("Configuration");
@@ -136,45 +123,28 @@ int main(int argc, char **argv)
                             ("temp-door-close", po::value<float>(), "temperature to close the door")
                             ("monitor-file", po::value<string>(), "file to save monitoring data");
 
-        po::options_description cmdline_options;
-        cmdline_options.add(visible);
-
-        po::options_description config_file_options;
-        config_file_options.add(config);
-
         po::variables_map vm;
-        store(po::parse_command_line(argc, argv, cmdline_options), vm);
+        store(po::parse_command_line(argc, argv, visible), vm);
         notify(vm);
-
-        // If the config file is not specified, try to find it in the default locations
-        if (config_file.empty())
-        {
-            // Construct the default config file paths
-            std::vector<std::string> default_config_files = {
-                std::string(std::getenv("HOME")) + "/.local/etc/coop-3000/config.cfg",
-                "/usr/local/etc/coop-3000/config.cfg"};
-
-            // Find the first available config file
-            config_file = find_config_file(default_config_files);
-        }
-
-
-        ifstream ifs(config_file.c_str());
-        if (!ifs)
-        {
-            throw std::runtime_error("Cannot open config file: " + config_file);
-        }
-        else
-        {
-            store(parse_config_file(ifs, config_file_options), vm);
-            notify(vm);
-        }
 
         if (vm.count("help"))
         {
             cout << visible << "\n";
             return 0;
         }
+
+        if (config_file.empty())
+        {
+            throw std::runtime_error("Specify a configuration file with --config or -c.");
+        }
+
+        ifstream ifs(config_file);
+        if (!ifs)
+        {
+            throw std::runtime_error("Cannot open config file: " + config_file);
+        }
+        store(parse_config_file(ifs, config), vm);
+        notify(vm);
 
         start(vm);
     }

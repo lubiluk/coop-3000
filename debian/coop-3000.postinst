@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+#DEBHELPER#
+
+# Leave first activation to the operator, but load the new binary on upgrade.
+if [ "$1" = configure ] && [ -n "${2:-}" ] && [ -d /run/systemd/system ] &&
+    systemctl --quiet is-active coop-3000.service; then
+    deb-systemd-invoke restart coop-3000.service >/dev/null || true
+fi

@@ -1,6 +1,7 @@
 .DS_Store
 .vscode/
 build/
-config/
-^config/config_example.cfg
+/build-mock/
+/config/*
+!/config/config_example.cfg
 *.csv

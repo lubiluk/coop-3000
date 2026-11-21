@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Option to control mocking
-option(USE_MOCK "Use mock for GPIO control" ON)
+option(USE_MOCK "Use mock for GPIO control" OFF)
 
 # Define the MOCK flag based on the USE_MOCK option
 if(USE_MOCK)
@@ -49,7 +49,3 @@ endif()
 # Install the executable
 install(TARGETS coop-3000
         RUNTIME DESTINATION bin)
-
-# Install configuration files
-install(FILES config/config.cfg
-        DESTINATION etc/coop-3000)

@@ -1,0 +1,13 @@
+Source: coop-3000
+Section: misc
+Priority: optional
+Maintainer: Paweł Gajewski <lubiluk@gmail.com>
+Build-Depends: debhelper-compat (= 13), cmake (>= 3.10), libboost-program-options-dev
+Rules-Requires-Root: no
+
+Package: coop-3000
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: automated chicken coop controller
+ Controls the door, lighting, and heating on a Raspberry Pi and records
+ status readings to a CSV file.
